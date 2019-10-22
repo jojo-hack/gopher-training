@@ -1,34 +1,41 @@
 version: '3'
 services:
-  mysql:
-    container_name: mysql
+  db:
+    container_name: gopher-traing-mysql
     build:
       context: .
       dockerfile: ./docker/mysql/Dockerfile
-    hostname: mysql
+    hostname: localhost
     ports:
-      - "33060:3306"
+      - "3306:3306"
     environment:
-      MYSQL_USER: gopher
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: gopher
-    command: mysql --character-set-server=utf8mb4 --collaction-server=utf8mb4_unicode_ci --skip-charaset-client-handshake
+      MYSQL_USER: gopher
+      MYSQL_PASSWORD: password
+      # TODO 初期設定をする（my.conf内でも可）
+      # command: mysql --character-set-server=utf8mb4 --collaction-server=utf8mb4_unicode_ci --skip-charaset-client-handshake
     volumes:
-      - "db-data:var/lib/mysql"
-      - "./docker/mysql/my.conf:./etc/mysql/my.conf"
-      - "./docker/mysql/init/:/docker-entry-point-initdb.d"
+      - "db-data:/var/lib/mysql"
+      # TODO パスを正しく指定する
+      # - "./docker/mysql/my.conf:./etc/mysql/my.conf"
+      - "./docker/mysql/init:/docker-entrypoint-initdb.d"
   web:
+    depends_on:
+      - db
     links:
-      - mysql
+      - db
     build:
       context: .
       dockerfile: ./docker/golang/Dockerfile
     container_name: gopher-training
     ports:
-      - "80800:8080"
+      - "8080:8080"
     volumes:
       - .:/go/src/gopher-training
-    command: sh ./start_app.sh
+      # TODO Mysqlに接続したあとに起動するようにする
+      # command: sh ./start_app.sh
+    command: go run main.go
 volumes:
   db-data:
     driver: local
