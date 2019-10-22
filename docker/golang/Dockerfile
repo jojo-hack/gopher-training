@@ -1,4 +1,5 @@
-FROM golang:1.13
+# TODO: depの使い方を理解したら1.13に変更する (yuzajotaro on 2019-10-22)
+FROM golang:1.10
 
 RUN apt-get update -qq
 RUN apt-get install -y
